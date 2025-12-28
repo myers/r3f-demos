@@ -2,8 +2,9 @@ import { useEffect } from 'react'
 import { useGLTF, useAnimations } from '@react-three/drei'
 import type { Object3D } from 'three'
 
-// DRACO compressed model URL from Three.js examples
-const MODEL_URL = 'https://threejs.org/examples/models/gltf/LittlestTokyo.glb'
+// Local model path (handles GitHub Pages base path)
+const BASE_URL = import.meta.env.BASE_URL || '/'
+const MODEL_URL = `${BASE_URL}models/LittlestTokyo.glb`
 
 export function LittlestTokyo() {
   const { scene, animations } = useGLTF(MODEL_URL)

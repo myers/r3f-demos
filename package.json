@@ -26,6 +26,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@gltf-transform/core": "^4.2.1",
+    "@gltf-transform/extensions": "^4.2.1",
     "@types/debug": "^4.1.12",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.5",
@@ -35,6 +37,7 @@
     "@vitest/browser-playwright": "^4.0.16",
     "@webxr-input-profiles/assets": "^1.0.20",
     "debug": "^4.4.3",
+    "draco3d": "^1.5.7",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",

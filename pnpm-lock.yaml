@@ -42,6 +42,12 @@ importers:
       '@eslint/js':
         specifier: ^9.39.1
         version: 9.39.2
+      '@gltf-transform/core':
+        specifier: ^4.2.1
+        version: 4.2.1
+      '@gltf-transform/extensions':
+        specifier: ^4.2.1
+        version: 4.2.1
       '@types/debug':
         specifier: ^4.1.12
         version: 4.1.12
@@ -69,6 +75,9 @@ importers:
       debug:
         specifier: ^4.4.3
         version: 4.4.3
+      draco3d:
+        specifier: ^1.5.7
+        version: 1.5.7
       eslint:
         specifier: ^9.39.1
         version: 9.39.2
@@ -422,6 +431,12 @@ packages:
     peerDependencies:
       '@fortawesome/fontawesome-svg-core': ~1 || ~6
       react: '>=16.3'
+
+  '@gltf-transform/core@4.2.1':
+    resolution: {integrity: sha512-qKhrQ29KJ9K6sz7xGoGRllqPBlROjPJMQPvCLBOfgMPH3S/Ph5E0e6fD5WmwTY5QPyBsDMRqKd1Vl0ncThTXGw==}
+
+  '@gltf-transform/extensions@4.2.1':
+    resolution: {integrity: sha512-ieHSJU9qvb3ucWDxgHFcff+C7fLtFPa6G0Wtc/ki7GsN6Rh7o9eoyqi7Ggj2LO4i3ynCwLLPb/onbJKw2fBtsA==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -1305,6 +1320,9 @@ packages:
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
 
+  ktx-parse@1.1.0:
+    resolution: {integrity: sha512-mKp3y+FaYgR7mXWAbyyzpa/r1zDWeaunH+INJO4fou3hb45XuNSwar+7llrRyvpMWafxSIi99RNFJ05MHedaJQ==}
+
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
@@ -1450,6 +1468,9 @@ packages:
 
   prop-types@15.8.1:
     resolution: {integrity: sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==}
+
+  property-graph@3.0.0:
+    resolution: {integrity: sha512-TnzxUsttmGtw+OiU0LDw+0FlMbJ8vV8pOjyDI7+Kdni4Tj0hW5BFh7TatQu7Y68hcvvFmiFOHilKShsA4R82fA==}
 
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
@@ -2151,6 +2172,15 @@ snapshots:
       '@fortawesome/fontawesome-svg-core': 6.6.0
       prop-types: 15.8.1
       react: 19.2.3
+
+  '@gltf-transform/core@4.2.1':
+    dependencies:
+      property-graph: 3.0.0
+
+  '@gltf-transform/extensions@4.2.1':
+    dependencies:
+      '@gltf-transform/core': 4.2.1
+      ktx-parse: 1.1.0
 
   '@humanfs/core@0.19.1': {}
 
@@ -3157,6 +3187,8 @@ snapshots:
     dependencies:
       json-buffer: 3.0.1
 
+  ktx-parse@1.1.0: {}
+
   levn@0.4.1:
     dependencies:
       prelude-ls: 1.2.1
@@ -3290,6 +3322,8 @@ snapshots:
       loose-envify: 1.4.0
       object-assign: 4.1.1
       react-is: 16.13.1
+
+  property-graph@3.0.0: {}
 
   punycode@2.3.1: {}
 
