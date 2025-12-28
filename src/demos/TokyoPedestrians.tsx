@@ -30,21 +30,18 @@ function PedestriansScene() {
 
       {/* Pedestrians in model space, wrapped with same transform as Tokyo */}
       <group position={MODEL_POSITION} scale={MODEL_SCALE}>
-        {/* Start positions in navmesh/model coordinates */}
+        {/* Start positions in navmesh/model coordinates, scale=100 for human size */}
         <Pedestrian
           startPosition={new THREE.Vector3(0, -200, 0)}
           speed={30}
-          scale={1}
         />
         <Pedestrian
           startPosition={new THREE.Vector3(100, -200, 50)}
           speed={35}
-          scale={1}
         />
         <Pedestrian
           startPosition={new THREE.Vector3(-50, -200, 100)}
           speed={32}
-          scale={1}
         />
       </group>
     </>
