@@ -1,10 +1,12 @@
 import { Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Stats } from '@react-three/drei'
+import { useControls } from 'leva'
 import * as THREE from 'three'
 import { Pedestrian } from '../components/Pedestrian'
 import { NavMeshProvider } from '../components/NavMeshProvider'
 import { NavMeshDebug } from '../components/NavMeshDebug'
+import { LittlestTokyo } from '../components/LittlestTokyo'
 import { DebugLogProvider, DebugLogPanel } from '../components/DebugLog'
 
 // Base path for assets (handles GitHub Pages deployment)
@@ -18,12 +20,22 @@ interface TokyoPedestriansProps {
 const MODEL_SCALE = 0.01
 
 function PedestriansScene() {
+  const { showTokyo, showNavMesh } = useControls({
+    showTokyo: { value: true, label: 'Show Tokyo Model' },
+    showNavMesh: { value: true, label: 'Show NavMesh' },
+  })
+
   return (
     <>
+      {/* Tokyo model */}
+      {showTokyo && <LittlestTokyo />}
+
       {/* Visible navmesh wireframe */}
-      <group scale={MODEL_SCALE}>
-        <NavMeshDebug />
-      </group>
+      {showNavMesh && (
+        <group scale={MODEL_SCALE}>
+          <NavMeshDebug />
+        </group>
+      )}
 
       {/* Pedestrians in model space */}
       <group scale={MODEL_SCALE}>
@@ -53,6 +65,10 @@ function PedestriansScene() {
 
 export function TokyoPedestrians({ onBack }: TokyoPedestriansProps) {
   const navMeshUrl = `${BASE_URL}models/LittlestTokyo.navmesh.bin`
+
+  const { showDebugLog } = useControls({
+    showDebugLog: { value: false, label: 'Show Debug Log' },
+  })
 
   return (
     <DebugLogProvider>
@@ -93,7 +109,7 @@ export function TokyoPedestrians({ onBack }: TokyoPedestriansProps) {
 
         <Stats />
       </Canvas>
-      <DebugLogPanel />
+      {showDebugLog && <DebugLogPanel />}
     </DebugLogProvider>
   )
 }
