@@ -71,6 +71,7 @@ export function Pedestrian({
       },
     })
     entityRef.current = entity
+    console.log('Pedestrian: entity created', entity, 'at position', groupRef.current.position)
 
     // Cleanup: remove entity when component unmounts
     return () => {

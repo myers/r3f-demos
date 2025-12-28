@@ -11,19 +11,32 @@ export function PedestrianSystem() {
   const { navMeshQuery } = useNavMesh()
 
   useFrame((_, delta) => {
-    if (!navMeshQuery) return
+    if (!navMeshQuery) {
+      console.log('PedestrianSystem: no navMeshQuery')
+      return
+    }
 
     // Process all pedestrian entities
     const entities = [...pedestrianQuery]
+    if (entities.length === 0) {
+      console.log('PedestrianSystem: no entities found')
+      return
+    }
+
     for (const entity of entities) {
       const { transform, navAgent } = entity
-      if (!transform) continue
+      if (!transform) {
+        console.log('PedestrianSystem: entity has no transform')
+        continue
+      }
 
       // If no current target, find a new destination
       if (!navAgent.currentTarget) {
         const destination = findRandomDestination(navMeshQuery)
+        console.log('PedestrianSystem: finding new destination', destination)
         if (destination) {
           const path = computePath(navMeshQuery, transform.position, destination)
+          console.log('PedestrianSystem: computed path length', path.length)
           if (path.length > 0) {
             navAgent.path = path
             navAgent.pathIndex = 0
