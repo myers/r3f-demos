@@ -4,39 +4,41 @@ import { OrbitControls, Environment, Stats } from '@react-three/drei'
 import * as THREE from 'three'
 import { LittlestTokyo } from '../components/LittlestTokyo'
 import { Pedestrian } from '../components/Pedestrian'
+import { NavMeshProvider } from '../components/NavMeshProvider'
 
-// Define walking paths around the Tokyo scene
-// The Tokyo model is at position [1, 1, 0] with scale 0.01
-// Ground level is approximately y = 1
-const PATHS = {
-  // Path along front of scene
-  path1: [
-    new THREE.Vector3(-1, 1, 2),
-    new THREE.Vector3(3, 1, 2),
-    new THREE.Vector3(3, 1, 2.5),
-    new THREE.Vector3(-1, 1, 2.5),
-  ],
-  // Path along side
-  path2: [
-    new THREE.Vector3(2.5, 1, -1),
-    new THREE.Vector3(2.5, 1, 3),
-    new THREE.Vector3(3, 1, 3),
-    new THREE.Vector3(3, 1, -1),
-  ],
-  // Diagonal path
-  path3: [
-    new THREE.Vector3(-0.5, 1, 0),
-    new THREE.Vector3(2, 1, 1.5),
-    new THREE.Vector3(2.5, 1, 1),
-    new THREE.Vector3(0, 1, -0.5),
-  ],
-}
+// Base path for assets (handles GitHub Pages deployment)
+const BASE_URL = import.meta.env.BASE_URL || '/'
 
 interface TokyoPedestriansProps {
   onBack: () => void
 }
 
+function PedestriansScene() {
+  return (
+    <>
+      <LittlestTokyo />
+      <Environment preset="city" />
+
+      {/* Three pedestrians starting at different positions */}
+      <Pedestrian
+        startPosition={new THREE.Vector3(0, 1, 2)}
+        speed={0.4}
+      />
+      <Pedestrian
+        startPosition={new THREE.Vector3(2, 1, 0)}
+        speed={0.5}
+      />
+      <Pedestrian
+        startPosition={new THREE.Vector3(-1, 1, 1)}
+        speed={0.45}
+      />
+    </>
+  )
+}
+
 export function TokyoPedestrians({ onBack }: TokyoPedestriansProps) {
+  const navMeshUrl = `${BASE_URL}models/LittlestTokyo.navmesh.bin`
+
   return (
     <>
       <button
@@ -63,13 +65,9 @@ export function TokyoPedestrians({ onBack }: TokyoPedestriansProps) {
         style={{ background: '#bfe3dd' }}
       >
         <Suspense fallback={null}>
-          <LittlestTokyo />
-          <Environment preset="city" />
-
-          {/* Three pedestrians on different paths */}
-          <Pedestrian path={PATHS.path1} speed={0.4} startOffset={0} />
-          <Pedestrian path={PATHS.path2} speed={0.5} startOffset={0.3} />
-          <Pedestrian path={PATHS.path3} speed={0.45} startOffset={0.6} />
+          <NavMeshProvider navMeshUrl={navMeshUrl}>
+            <PedestriansScene />
+          </NavMeshProvider>
         </Suspense>
 
         <OrbitControls
