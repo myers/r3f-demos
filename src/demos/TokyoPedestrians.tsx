@@ -13,25 +13,36 @@ interface TokyoPedestriansProps {
   onBack: () => void
 }
 
+// LittlestTokyo uses position=[1,1,0] scale=0.01
+// Navmesh is in model space, so pedestrians need same transform
+const MODEL_POSITION: [number, number, number] = [1, 1, 0]
+const MODEL_SCALE = 0.01
+
 function PedestriansScene() {
   return (
     <>
       <LittlestTokyo />
       <Environment preset="city" />
 
-      {/* Three pedestrians starting at different positions */}
-      <Pedestrian
-        startPosition={new THREE.Vector3(0, 1, 2)}
-        speed={0.4}
-      />
-      <Pedestrian
-        startPosition={new THREE.Vector3(2, 1, 0)}
-        speed={0.5}
-      />
-      <Pedestrian
-        startPosition={new THREE.Vector3(-1, 1, 1)}
-        speed={0.45}
-      />
+      {/* Pedestrians in model space, wrapped with same transform as Tokyo */}
+      <group position={MODEL_POSITION} scale={MODEL_SCALE}>
+        {/* Start positions in navmesh/model coordinates */}
+        <Pedestrian
+          startPosition={new THREE.Vector3(0, -200, 0)}
+          speed={30}
+          scale={1}
+        />
+        <Pedestrian
+          startPosition={new THREE.Vector3(100, -200, 50)}
+          speed={35}
+          scale={1}
+        />
+        <Pedestrian
+          startPosition={new THREE.Vector3(-50, -200, 100)}
+          speed={32}
+          scale={1}
+        />
+      </group>
     </>
   )
 }
