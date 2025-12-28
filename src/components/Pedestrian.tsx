@@ -81,12 +81,21 @@ export function Pedestrian({
   const logRef = useRef(log)
   logRef.current = log
 
+  // Track if we've logged the first frame
+  const firstFrameLogged = useRef(false)
+
   // Movement logic in useFrame
   useFrame((_, delta) => {
     if (!navMeshQuery || !groupRef.current) return
 
     const state = navState.current
     const position = groupRef.current.position
+
+    // Log first frame info
+    if (!firstFrameLogged.current) {
+      firstFrameLogged.current = true
+      logRef.current(`[${id}] First frame: initialized=${state.initialized}, pos=(${position.x.toFixed(1)}, ${position.y.toFixed(1)}, ${position.z.toFixed(1)})`)
+    }
 
     // If no current target, find a new destination
     if (!state.currentTarget) {
@@ -115,7 +124,7 @@ export function Pedestrian({
       })
 
       if (!startResult.success || !endResult.success) {
-        logRef.current(`[${id}] findClosestPoint failed: start=${startResult.success}, end=${endResult.success}`)
+        logRef.current(`[${id}] findClosestPoint failed: start=${startResult.success}, end=${endResult.success}, pos=(${position.x.toFixed(1)}, ${position.y.toFixed(1)}, ${position.z.toFixed(1)})`)
         return
       }
 
