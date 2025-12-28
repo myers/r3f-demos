@@ -19,7 +19,7 @@ export function LittlestTokyo() {
   }, [actions, animations])
 
   return (
-    <primitive object={scene} position={[1, 1, 0]} scale={0.01} />
+    <primitive object={scene} scale={0.01} />
   )
 }
 
