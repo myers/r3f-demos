@@ -4,10 +4,13 @@ import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js'
 import { useNavMesh } from './NavMeshProvider'
+import { useDebugLog } from './DebugLog'
 
 const SOLDIER_URL = 'https://threejs.org/examples/models/gltf/Soldier.glb'
 
 interface PedestrianProps {
+  /** Unique ID for debug logging */
+  id?: string
   /** Starting position (will find nearest point on navmesh) */
   startPosition?: THREE.Vector3
   /** Walking speed in units per second */
@@ -17,6 +20,7 @@ interface PedestrianProps {
 }
 
 export function Pedestrian({
+  id = 'ped',
   startPosition = new THREE.Vector3(0, 0, 0),
   speed = 30,
   scale = 30,
@@ -24,6 +28,7 @@ export function Pedestrian({
   const { scene, animations } = useGLTF(SOLDIER_URL)
   const groupRef = useRef<THREE.Group>(null)
   const { navMeshQuery } = useNavMesh()
+  const { log } = useDebugLog()
 
   // Navigation state
   const navState = useRef({
@@ -52,6 +57,8 @@ export function Pedestrian({
   useEffect(() => {
     if (!navMeshQuery || !groupRef.current || navState.current.initialized) return
 
+    log(`[${id}] Initializing at start position (${startPosition.x.toFixed(1)}, ${startPosition.y.toFixed(1)}, ${startPosition.z.toFixed(1)})`)
+
     // Find closest point on navmesh to start position
     const result = navMeshQuery.findClosestPoint({
       x: startPosition.x,
@@ -61,12 +68,18 @@ export function Pedestrian({
 
     if (result.success) {
       groupRef.current.position.set(result.point.x, result.point.y, result.point.z)
+      log(`[${id}] Snapped to navmesh at (${result.point.x.toFixed(1)}, ${result.point.y.toFixed(1)}, ${result.point.z.toFixed(1)})`)
     } else {
       groupRef.current.position.copy(startPosition)
+      log(`[${id}] WARNING: Could not find navmesh point, using start position`)
     }
 
     navState.current.initialized = true
-  }, [navMeshQuery, startPosition])
+  }, [navMeshQuery, startPosition, id, log])
+
+  // Use a ref to store log function to avoid re-renders
+  const logRef = useRef(log)
+  logRef.current = log
 
   // Movement logic in useFrame
   useFrame((_, delta) => {
@@ -78,7 +91,10 @@ export function Pedestrian({
     // If no current target, find a new destination
     if (!state.currentTarget) {
       const randomResult = navMeshQuery.findRandomPoint()
-      if (!randomResult.success) return
+      if (!randomResult.success) {
+        logRef.current(`[${id}] findRandomPoint failed`)
+        return
+      }
 
       const destination = new THREE.Vector3(
         randomResult.randomPoint.x,
@@ -98,14 +114,21 @@ export function Pedestrian({
         z: destination.z,
       })
 
-      if (!startResult.success || !endResult.success) return
+      if (!startResult.success || !endResult.success) {
+        logRef.current(`[${id}] findClosestPoint failed: start=${startResult.success}, end=${endResult.success}`)
+        return
+      }
 
       const pathResult = navMeshQuery.computePath(startResult.point, endResult.point)
-      if (!pathResult.success || pathResult.path.length === 0) return
+      if (!pathResult.success || pathResult.path.length === 0) {
+        logRef.current(`[${id}] computePath failed: success=${pathResult.success}, length=${pathResult.path?.length || 0}`)
+        return
+      }
 
       state.path = pathResult.path.map((p) => new THREE.Vector3(p.x, p.y, p.z))
       state.pathIndex = 0
       state.currentTarget = state.path[0]
+      logRef.current(`[${id}] New path with ${state.path.length} waypoints`)
       return
     }
 
@@ -118,6 +141,7 @@ export function Pedestrian({
       state.pathIndex++
       if (state.pathIndex >= state.path.length) {
         // Reached destination, find new one
+        logRef.current(`[${id}] Reached destination`)
         state.currentTarget = null
         state.path = []
         state.pathIndex = 0
