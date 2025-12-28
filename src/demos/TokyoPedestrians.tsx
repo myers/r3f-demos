@@ -1,11 +1,10 @@
 import { Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls, Environment, Stats } from '@react-three/drei'
+import { OrbitControls, Stats } from '@react-three/drei'
 import * as THREE from 'three'
-import { LittlestTokyo } from '../components/LittlestTokyo'
 import { Pedestrian } from '../components/Pedestrian'
 import { NavMeshProvider } from '../components/NavMeshProvider'
-import { PedestrianSystem } from '../ecs/systems'
+import { NavMeshDebug } from '../components/NavMeshDebug'
 
 // Base path for assets (handles GitHub Pages deployment)
 const BASE_URL = import.meta.env.BASE_URL || '/'
@@ -14,23 +13,19 @@ interface TokyoPedestriansProps {
   onBack: () => void
 }
 
-// LittlestTokyo uses position=[1,1,0] scale=0.01
-// Navmesh is in model space, so pedestrians need same transform
-const MODEL_POSITION: [number, number, number] = [1, 1, 0]
+// Navmesh is in model space, pedestrians work in same coordinate system
 const MODEL_SCALE = 0.01
 
 function PedestriansScene() {
   return (
     <>
-      <LittlestTokyo />
-      <Environment preset="city" />
+      {/* Visible navmesh wireframe */}
+      <group scale={MODEL_SCALE}>
+        <NavMeshDebug />
+      </group>
 
-      {/* ECS System for pedestrian movement */}
-      <PedestrianSystem />
-
-      {/* Pedestrians in model space, wrapped with same transform as Tokyo */}
-      <group position={MODEL_POSITION} scale={MODEL_SCALE}>
-        {/* Start positions in navmesh/model coordinates, scale=100 for human size */}
+      {/* Pedestrians in model space */}
+      <group scale={MODEL_SCALE}>
         <Pedestrian
           startPosition={new THREE.Vector3(0, -200, 0)}
           speed={30}
@@ -44,6 +39,10 @@ function PedestriansScene() {
           speed={32}
         />
       </group>
+
+      {/* Simple lighting */}
+      <ambientLight intensity={0.5} />
+      <directionalLight position={[10, 10, 5]} intensity={1} />
     </>
   )
 }
@@ -72,9 +71,9 @@ export function TokyoPedestrians({ onBack }: TokyoPedestriansProps) {
         ← Back to Demos
       </button>
       <Canvas
-        camera={{ position: [5, 2, 8], fov: 40 }}
+        camera={{ position: [5, 5, 5], fov: 60 }}
         gl={{ antialias: true }}
-        style={{ background: '#bfe3dd' }}
+        style={{ background: '#1a1a2e' }}
       >
         <Suspense fallback={null}>
           <NavMeshProvider navMeshUrl={navMeshUrl}>
@@ -83,8 +82,7 @@ export function TokyoPedestrians({ onBack }: TokyoPedestriansProps) {
         </Suspense>
 
         <OrbitControls
-          target={[0, 0.5, 0]}
-          enablePan={false}
+          target={[0, 0, 0]}
           enableDamping
           dampingFactor={0.05}
         />
