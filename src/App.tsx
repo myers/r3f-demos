@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { LittlestTokyoVR } from './demos/LittlestTokyoVR'
+import { TokyoPedestrians } from './demos/TokyoPedestrians'
 
 interface Demo {
   id: string
@@ -14,6 +15,12 @@ const demos: Demo[] = [
     title: 'Littlest Tokyo VR',
     description: 'Walk through an animated city scene using VR teleportation.',
     component: LittlestTokyoVR,
+  },
+  {
+    id: 'tokyo-pedestrians',
+    title: 'Tokyo Pedestrians',
+    description: 'Watch animated soldiers walk through the Littlest Tokyo scene.',
+    component: TokyoPedestrians,
   },
 ]
 
