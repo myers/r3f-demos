@@ -223,8 +223,11 @@ async function main() {
     walkableRadius: 2,
     maxEdgeLen: 100,
     maxSimplificationError: 3.0,
-    minRegionArea: 4,
-    mergeRegionArea: 20,
+    // Filter out small disconnected regions/islands
+    // Regions with fewer voxels than minRegionArea^2 are removed
+    minRegionArea: 100,
+    // Merge small regions into larger neighbors
+    mergeRegionArea: 400,
     maxVertsPerPoly: 6,
     detailSampleDist: 12,
     detailSampleMaxError: 2,
