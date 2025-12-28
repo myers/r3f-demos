@@ -177,9 +177,9 @@ export function Pedestrian({
       const moveDistance = Math.min(speed * delta, distance)
       position.addScaledVector(direction, moveDistance)
 
-      // Face direction of movement
+      // Face direction of movement (add PI because Soldier model faces +Z)
       const angle = Math.atan2(direction.x, direction.z)
-      groupRef.current.rotation.y = angle
+      groupRef.current.rotation.y = angle + Math.PI
     }
   })
 
