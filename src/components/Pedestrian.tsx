@@ -27,8 +27,11 @@ export function Pedestrian({
 }: PedestrianProps) {
   const { scene, animations } = useGLTF(SOLDIER_URL)
   const groupRef = useRef<THREE.Group>(null)
-  const { navMeshQuery } = useNavMesh()
+  const { navMeshQuery, bounds } = useNavMesh()
   const { log } = useDebugLog()
+
+  // Use navmesh bounds for search extent, with fallback
+  const searchExtent = bounds?.halfExtents ?? { x: 500, y: 500, z: 500 }
 
   // Navigation state
   const navState = useRef({
@@ -57,29 +60,42 @@ export function Pedestrian({
   useEffect(() => {
     if (!navMeshQuery || !groupRef.current || navState.current.initialized) return
 
-    log(`[${id}] Initializing at start position (${startPosition.x.toFixed(1)}, ${startPosition.y.toFixed(1)}, ${startPosition.z.toFixed(1)})`)
+    log(`[${id}] Initializing, navmesh bounds: ${bounds ? `${bounds.size.x.toFixed(0)}x${bounds.size.y.toFixed(0)}x${bounds.size.z.toFixed(0)}` : 'unknown'}`)
 
-    // Find closest point on navmesh to start position
-    const result = navMeshQuery.findClosestPoint({
-      x: startPosition.x,
-      y: startPosition.y,
-      z: startPosition.z,
-    })
+    // Find closest point on navmesh to start position with dynamic search extent
+    const result = navMeshQuery.findClosestPoint(
+      { x: startPosition.x, y: startPosition.y, z: startPosition.z },
+      { halfExtents: searchExtent }
+    )
 
     if (result.success) {
       groupRef.current.position.set(result.point.x, result.point.y, result.point.z)
       log(`[${id}] Snapped to navmesh at (${result.point.x.toFixed(1)}, ${result.point.y.toFixed(1)}, ${result.point.z.toFixed(1)})`)
     } else {
-      groupRef.current.position.copy(startPosition)
-      log(`[${id}] WARNING: Could not find navmesh point, using start position`)
+      // Fallback: use a random point on the navmesh
+      log(`[${id}] WARNING: Could not find closest point, trying random point`)
+      const randomResult = navMeshQuery.findRandomPoint()
+      if (randomResult.success) {
+        groupRef.current.position.set(
+          randomResult.randomPoint.x,
+          randomResult.randomPoint.y,
+          randomResult.randomPoint.z
+        )
+        log(`[${id}] Using random navmesh point (${randomResult.randomPoint.x.toFixed(1)}, ${randomResult.randomPoint.y.toFixed(1)}, ${randomResult.randomPoint.z.toFixed(1)})`)
+      } else {
+        groupRef.current.position.copy(startPosition)
+        log(`[${id}] ERROR: Could not find any navmesh point`)
+      }
     }
 
     navState.current.initialized = true
-  }, [navMeshQuery, startPosition, id, log])
+  }, [navMeshQuery, bounds, startPosition, id, log, searchExtent])
 
-  // Use a ref to store log function to avoid re-renders
+  // Use refs to store values for useFrame
   const logRef = useRef(log)
   logRef.current = log
+  const searchExtentRef = useRef(searchExtent)
+  searchExtentRef.current = searchExtent
 
   // Track if we've logged the first frame
   const firstFrameLogged = useRef(false)
@@ -111,17 +127,15 @@ export function Pedestrian({
         randomResult.randomPoint.z
       )
 
-      // Compute path
-      const startResult = navMeshQuery.findClosestPoint({
-        x: position.x,
-        y: position.y,
-        z: position.z,
-      })
-      const endResult = navMeshQuery.findClosestPoint({
-        x: destination.x,
-        y: destination.y,
-        z: destination.z,
-      })
+      // Compute path with dynamic search extent
+      const startResult = navMeshQuery.findClosestPoint(
+        { x: position.x, y: position.y, z: position.z },
+        { halfExtents: searchExtentRef.current }
+      )
+      const endResult = navMeshQuery.findClosestPoint(
+        { x: destination.x, y: destination.y, z: destination.z },
+        { halfExtents: searchExtentRef.current }
+      )
 
       if (!startResult.success || !endResult.success) {
         logRef.current(`[${id}] findClosestPoint failed: start=${startResult.success}, end=${endResult.success}, pos=(${position.x.toFixed(1)}, ${position.y.toFixed(1)}, ${position.z.toFixed(1)})`)
