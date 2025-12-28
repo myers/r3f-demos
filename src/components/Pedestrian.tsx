@@ -1,8 +1,8 @@
-import { useEffect, useRef, useMemo, useCallback } from 'react'
+import { useEffect, useRef, useMemo } from 'react'
 import { useGLTF, useAnimations } from '@react-three/drei'
-import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js'
+import { ECS } from '../ecs/world'
 import { useNavMesh } from './NavMeshProvider'
 
 const SOLDIER_URL = 'https://threejs.org/examples/models/gltf/Soldier.glb'
@@ -25,11 +25,6 @@ export function Pedestrian({
   const groupRef = useRef<THREE.Group>(null)
   const { navMeshQuery } = useNavMesh()
 
-  // Path state
-  const pathRef = useRef<THREE.Vector3[]>([])
-  const pathIndexRef = useRef(0)
-  const currentTargetRef = useRef<THREE.Vector3 | null>(null)
-
   // Clone the model so each pedestrian has its own skeleton
   const clonedScene = useMemo(() => {
     return SkeletonUtils.clone(scene)
@@ -44,45 +39,6 @@ export function Pedestrian({
       walkAction.play()
     }
   }, [actions])
-
-  // Find a random destination on the navmesh
-  const findNewDestination = useCallback(() => {
-    if (!navMeshQuery || !groupRef.current) return null
-
-    const result = navMeshQuery.findRandomPoint()
-    if (result.success) {
-      return new THREE.Vector3(
-        result.randomPoint.x,
-        result.randomPoint.y,
-        result.randomPoint.z
-      )
-    }
-    return null
-  }, [navMeshQuery])
-
-  // Compute path to destination
-  const computePath = useCallback(
-    (from: THREE.Vector3, to: THREE.Vector3): THREE.Vector3[] => {
-      if (!navMeshQuery) return []
-
-      // Find nearest points on navmesh
-      const startResult = navMeshQuery.findClosestPoint({ x: from.x, y: from.y, z: from.z })
-      const endResult = navMeshQuery.findClosestPoint({ x: to.x, y: to.y, z: to.z })
-
-      if (!startResult.success || !endResult.success) return []
-
-      // Find path
-      const pathResult = navMeshQuery.computePath(startResult.point, endResult.point)
-
-      if (!pathResult.success || pathResult.path.length === 0) return []
-
-      // Convert to Vector3 array
-      return pathResult.path.map(
-        (p) => new THREE.Vector3(p.x, p.y, p.z)
-      )
-    },
-    [navMeshQuery]
-  )
 
   // Initialize position on navmesh
   useEffect(() => {
@@ -100,61 +56,24 @@ export function Pedestrian({
     }
   }, [navMeshQuery, startPosition])
 
-  // Animate along path
-  useFrame((_, delta) => {
-    if (!groupRef.current || !navMeshQuery) return
-
-    // If no current target, find a new destination
-    if (!currentTargetRef.current) {
-      const destination = findNewDestination()
-      if (destination) {
-        const path = computePath(groupRef.current.position, destination)
-        if (path.length > 0) {
-          pathRef.current = path
-          pathIndexRef.current = 0
-          currentTargetRef.current = path[0]
-        }
-      }
-      return
-    }
-
-    // Move towards current path point
-    const position = groupRef.current.position
-    const target = currentTargetRef.current
-    const direction = new THREE.Vector3().subVectors(target, position)
-    const distance = direction.length()
-
-    if (distance < 0.1) {
-      // Reached current waypoint, move to next
-      pathIndexRef.current++
-
-      if (pathIndexRef.current >= pathRef.current.length) {
-        // Reached destination, find new one
-        currentTargetRef.current = null
-        pathRef.current = []
-        pathIndexRef.current = 0
-      } else {
-        currentTargetRef.current = pathRef.current[pathIndexRef.current]
-      }
-    } else {
-      // Move towards target
-      direction.normalize()
-      const moveDistance = Math.min(speed * delta, distance)
-      position.addScaledVector(direction, moveDistance)
-
-      // Face direction of movement
-      const angle = Math.atan2(direction.x, direction.z)
-      groupRef.current.rotation.y = angle
-    }
-  })
-
   // Don't render until navmesh is loaded
   if (!navMeshQuery) return null
 
   return (
-    <group ref={groupRef}>
-      <primitive object={clonedScene} scale={scale} />
-    </group>
+    <ECS.Entity>
+      <ECS.Component name="pedestrian" data={true} />
+      <ECS.Component name="navAgent" data={{
+        speed,
+        path: [],
+        pathIndex: 0,
+        currentTarget: null,
+      }} />
+      <ECS.Component name="transform">
+        <group ref={groupRef}>
+          <primitive object={clonedScene} scale={scale} />
+        </group>
+      </ECS.Component>
+    </ECS.Entity>
   )
 }
 
