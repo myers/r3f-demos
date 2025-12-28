@@ -1,14 +1,13 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useGLTF, useAnimations } from '@react-three/drei'
-import { Group } from 'three'
+import type { Object3D } from 'three'
 
 // DRACO compressed model URL from Three.js examples
 const MODEL_URL = 'https://threejs.org/examples/models/gltf/LittlestTokyo.glb'
 
 export function LittlestTokyo() {
-  const group = useRef<Group>(null)
   const { scene, animations } = useGLTF(MODEL_URL)
-  const { actions } = useAnimations(animations, group)
+  const { actions } = useAnimations(animations, scene as unknown as Object3D)
 
   useEffect(() => {
     // Play the first animation clip
@@ -19,9 +18,7 @@ export function LittlestTokyo() {
   }, [actions, animations])
 
   return (
-    <group ref={group} position={[1, 1, 0]} scale={0.01}>
-      <primitive object={scene} />
-    </group>
+    <primitive object={scene} position={[1, 1, 0]} scale={0.01} />
   )
 }
 
