@@ -12,14 +12,14 @@ interface PedestrianProps {
   startPosition?: THREE.Vector3
   /** Walking speed in units per second */
   speed?: number
-  /** Scale of the model (in model space - 100 is human-sized for LittlestTokyo) */
+  /** Scale of the model (in model space - 30 is human-sized for LittlestTokyo) */
   scale?: number
 }
 
 export function Pedestrian({
   startPosition = new THREE.Vector3(0, 0, 0),
   speed = 30,
-  scale = 100,
+  scale = 30,
 }: PedestrianProps) {
   const { scene, animations } = useGLTF(SOLDIER_URL)
   const groupRef = useRef<THREE.Group>(null)

@@ -14,7 +14,8 @@ export function PedestrianSystem() {
     if (!navMeshQuery) return
 
     // Process all pedestrian entities
-    for (const entity of pedestrianQuery) {
+    const entities = [...pedestrianQuery]
+    for (const entity of entities) {
       const { transform, navAgent } = entity
       if (!transform) continue
 
@@ -38,7 +39,7 @@ export function PedestrianSystem() {
       const direction = new THREE.Vector3().subVectors(target, position)
       const distance = direction.length()
 
-      if (distance < 0.1) {
+      if (distance < 5) {
         // Reached current waypoint, move to next
         navAgent.pathIndex++
 
