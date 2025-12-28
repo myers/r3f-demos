@@ -5,6 +5,7 @@ import * as THREE from 'three'
 import { LittlestTokyo } from '../components/LittlestTokyo'
 import { Pedestrian } from '../components/Pedestrian'
 import { NavMeshProvider } from '../components/NavMeshProvider'
+import { PedestrianSystem } from '../ecs/systems'
 
 // Base path for assets (handles GitHub Pages deployment)
 const BASE_URL = import.meta.env.BASE_URL || '/'
@@ -23,6 +24,9 @@ function PedestriansScene() {
     <>
       <LittlestTokyo />
       <Environment preset="city" />
+
+      {/* ECS System for pedestrian movement */}
+      <PedestrianSystem />
 
       {/* Pedestrians in model space, wrapped with same transform as Tokyo */}
       <group position={MODEL_POSITION} scale={MODEL_SCALE}>
