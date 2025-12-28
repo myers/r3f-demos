@@ -2,7 +2,7 @@ import { useEffect, useRef, useMemo } from 'react'
 import { useGLTF, useAnimations } from '@react-three/drei'
 import * as THREE from 'three'
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js'
-import { ECS } from '../ecs/world'
+import { world, type Entity } from '../ecs/world'
 import { useNavMesh } from './NavMeshProvider'
 
 const SOLDIER_URL = 'https://threejs.org/examples/models/gltf/Soldier.glb'
@@ -12,17 +12,18 @@ interface PedestrianProps {
   startPosition?: THREE.Vector3
   /** Walking speed in units per second */
   speed?: number
-  /** Scale of the model */
+  /** Scale of the model (in model space - 100 is human-sized for LittlestTokyo) */
   scale?: number
 }
 
 export function Pedestrian({
   startPosition = new THREE.Vector3(0, 0, 0),
-  speed = 0.5,
-  scale = 0.01,
+  speed = 30,
+  scale = 100,
 }: PedestrianProps) {
   const { scene, animations } = useGLTF(SOLDIER_URL)
   const groupRef = useRef<THREE.Group>(null)
+  const entityRef = useRef<Entity | null>(null)
   const { navMeshQuery } = useNavMesh()
 
   // Clone the model so each pedestrian has its own skeleton
@@ -40,7 +41,7 @@ export function Pedestrian({
     }
   }, [actions])
 
-  // Initialize position on navmesh
+  // Create and manage entity
   useEffect(() => {
     if (!navMeshQuery || !groupRef.current) return
 
@@ -53,27 +54,40 @@ export function Pedestrian({
 
     if (result.success) {
       groupRef.current.position.set(result.point.x, result.point.y, result.point.z)
+    } else {
+      // Fallback to start position if navmesh query fails
+      groupRef.current.position.copy(startPosition)
     }
-  }, [navMeshQuery, startPosition])
+
+    // Create entity with all components
+    const entity = world.add({
+      pedestrian: true,
+      transform: groupRef.current,
+      navAgent: {
+        speed,
+        path: [],
+        pathIndex: 0,
+        currentTarget: null,
+      },
+    })
+    entityRef.current = entity
+
+    // Cleanup: remove entity when component unmounts
+    return () => {
+      if (entityRef.current) {
+        world.remove(entityRef.current)
+        entityRef.current = null
+      }
+    }
+  }, [navMeshQuery, startPosition, speed])
 
   // Don't render until navmesh is loaded
   if (!navMeshQuery) return null
 
   return (
-    <ECS.Entity>
-      <ECS.Component name="pedestrian" data={true} />
-      <ECS.Component name="navAgent" data={{
-        speed,
-        path: [],
-        pathIndex: 0,
-        currentTarget: null,
-      }} />
-      <ECS.Component name="transform">
-        <group ref={groupRef}>
-          <primitive object={clonedScene} scale={scale} />
-        </group>
-      </ECS.Component>
-    </ECS.Entity>
+    <group ref={groupRef}>
+      <primitive object={clonedScene} scale={scale} />
+    </group>
   )
 }
 
