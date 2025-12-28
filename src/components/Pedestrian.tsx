@@ -178,8 +178,16 @@ export function Pedestrian({
       position.addScaledVector(direction, moveDistance)
 
       // Face direction of movement (add PI because Soldier model faces +Z)
-      const angle = Math.atan2(direction.x, direction.z)
-      groupRef.current.rotation.y = angle + Math.PI
+      const targetAngle = Math.atan2(direction.x, direction.z) + Math.PI
+      const currentAngle = groupRef.current.rotation.y
+
+      // Lerp angle with wrapping (find shortest rotation path)
+      let angleDiff = targetAngle - currentAngle
+      while (angleDiff > Math.PI) angleDiff -= Math.PI * 2
+      while (angleDiff < -Math.PI) angleDiff += Math.PI * 2
+
+      // Smoothly rotate (0.1 = 10% per frame, adjust for turn speed)
+      groupRef.current.rotation.y += angleDiff * 0.1
     }
   })
 
