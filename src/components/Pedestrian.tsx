@@ -5,8 +5,12 @@ import * as THREE from 'three'
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js'
 import { useNavMesh } from './NavMeshProvider'
 import { useDebugLog } from './DebugLog'
+import { world, type Entity } from '../ecs/world'
 
 const SOLDIER_URL = 'https://threejs.org/examples/models/gltf/Soldier.glb'
+
+// Collision radius for pedestrians (in navmesh/model space)
+const COLLISION_RADIUS = 15
 
 interface PedestrianProps {
   /** Unique ID for debug logging */
@@ -29,6 +33,7 @@ export function Pedestrian({
   const groupRef = useRef<THREE.Group>(null)
   const { navMeshQuery, bounds } = useNavMesh()
   const { log } = useDebugLog()
+  const entityRef = useRef<Entity | null>(null)
 
   // Randomize speed with ±10% variance (stable per pedestrian instance)
   const effectiveSpeed = useMemo(() => {
@@ -68,6 +73,27 @@ export function Pedestrian({
       walkAction.time = animationOffset * duration
     }
   }, [actions, animationOffset])
+
+  // Register with ECS world for collision detection
+  useEffect(() => {
+    if (!groupRef.current) return
+
+    const entity: Entity = {
+      transform: groupRef.current,
+      collision: {
+        radius: COLLISION_RADIUS,
+        separation: new THREE.Vector3(),
+      },
+    }
+
+    world.add(entity)
+    entityRef.current = entity
+
+    return () => {
+      world.remove(entity)
+      entityRef.current = null
+    }
+  }, [])
 
   // Initialize position on navmesh
   useEffect(() => {
@@ -119,6 +145,12 @@ export function Pedestrian({
 
     const state = navState.current
     const position = groupRef.current.position
+
+    // Apply separation force from collision system
+    if (entityRef.current?.collision) {
+      const separation = entityRef.current.collision.separation
+      position.add(separation)
+    }
 
     // Log first frame info
     if (!firstFrameLogged.current) {

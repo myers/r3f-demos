@@ -1,7 +1,61 @@
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { pedestrianQuery } from './world'
+import { pedestrianQuery, collidableQuery } from './world'
 import { useNavMesh } from '../components/NavMeshProvider'
+
+// Collision detection settings
+const SEPARATION_STRENGTH = 0.5 // How strongly entities push apart
+
+/**
+ * System that handles collision avoidance between entities
+ * Calculates separation forces for all collidable entities
+ */
+export function CollisionSystem() {
+  useFrame(() => {
+    const entities = [...collidableQuery]
+    if (entities.length < 2) return
+
+    // Reset separation forces
+    for (const entity of entities) {
+      entity.collision.separation.set(0, 0, 0)
+    }
+
+    // Check all pairs for collisions
+    for (let i = 0; i < entities.length; i++) {
+      for (let j = i + 1; j < entities.length; j++) {
+        const a = entities[i]
+        const b = entities[j]
+
+        const posA = a.transform.position
+        const posB = b.transform.position
+
+        // Calculate distance (ignoring Y axis for ground-based collision)
+        const dx = posB.x - posA.x
+        const dz = posB.z - posA.z
+        const distSq = dx * dx + dz * dz
+        const minDist = a.collision.radius + b.collision.radius
+
+        if (distSq < minDist * minDist && distSq > 0.001) {
+          const dist = Math.sqrt(distSq)
+          const overlap = minDist - dist
+
+          // Normalize direction and scale by overlap
+          const nx = dx / dist
+          const nz = dz / dist
+          const force = overlap * SEPARATION_STRENGTH
+
+          // Apply equal and opposite forces
+          a.collision.separation.x -= nx * force
+          a.collision.separation.z -= nz * force
+          b.collision.separation.x += nx * force
+          b.collision.separation.z += nz * force
+        }
+      }
+    }
+  })
+
+  return null
+}
 
 /**
  * System that handles pedestrian movement and pathfinding

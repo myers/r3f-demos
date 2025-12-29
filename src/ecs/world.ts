@@ -20,6 +20,12 @@ export interface Entity {
     currentTarget: THREE.Vector3 | null
   }
 
+  // Collision component for avoidance
+  collision?: {
+    radius: number
+    separation: THREE.Vector3 // Accumulated separation force this frame
+  }
+
   // Animation state
   animation?: {
     mixer: THREE.AnimationMixer
@@ -36,3 +42,4 @@ export const ECS = createReactAPI(world)
 
 // Create queries for systems
 export const pedestrianQuery = world.with('pedestrian', 'transform', 'navAgent')
+export const collidableQuery = world.with('transform', 'collision')
