@@ -12,10 +12,6 @@ import { DebugLogProvider, DebugLogPanel } from '../components/DebugLog'
 // Base path for assets (handles GitHub Pages deployment)
 const BASE_URL = import.meta.env.BASE_URL || '/'
 
-interface TokyoPedestriansProps {
-  onBack: () => void
-}
-
 // Navmesh is in model space, pedestrians work in same coordinate system
 const MODEL_SCALE = 0.01
 
@@ -63,7 +59,7 @@ function PedestriansScene() {
   )
 }
 
-export function TokyoPedestrians({ onBack }: TokyoPedestriansProps) {
+export function TokyoPedestrians() {
   const navMeshUrl = `${BASE_URL}models/LittlestTokyo.navmesh.bin`
 
   const { showDebugLog } = useControls({
@@ -72,8 +68,8 @@ export function TokyoPedestrians({ onBack }: TokyoPedestriansProps) {
 
   return (
     <DebugLogProvider>
-      <button
-        onClick={onBack}
+      <a
+        href={BASE_URL}
         style={{
           position: 'absolute',
           top: '20px',
@@ -86,10 +82,12 @@ export function TokyoPedestrians({ onBack }: TokyoPedestriansProps) {
           color: 'white',
           border: 'none',
           borderRadius: '4px',
+          textDecoration: 'none',
+          display: 'inline-block',
         }}
       >
         ← Back to Demos
-      </button>
+      </a>
       <Canvas
         camera={{ position: [5, 5, 5], fov: 60 }}
         gl={{ antialias: true }}
