@@ -30,6 +30,13 @@ export function Pedestrian({
   const { navMeshQuery, bounds } = useNavMesh()
   const { log } = useDebugLog()
 
+  // Randomize speed with ±10% variance (stable per pedestrian instance)
+  const effectiveSpeed = useMemo(() => {
+    const variance = 0.1
+    const randomFactor = 1 + (Math.random() * 2 - 1) * variance
+    return speed * randomFactor
+  }, [speed])
+
   // Use navmesh bounds for search extent, with fallback
   const searchExtent = bounds?.halfExtents ?? { x: 500, y: 500, z: 500 }
 
@@ -48,13 +55,19 @@ export function Pedestrian({
 
   const { actions } = useAnimations(animations, clonedScene)
 
-  // Play walk animation
+  // Random animation offset (stable per pedestrian instance)
+  const animationOffset = useMemo(() => Math.random(), [])
+
+  // Play walk animation with random start time
   useEffect(() => {
     const walkAction = actions['Walk']
     if (walkAction) {
       walkAction.play()
+      // Set random start time within the animation duration
+      const duration = walkAction.getClip().duration
+      walkAction.time = animationOffset * duration
     }
-  }, [actions])
+  }, [actions, animationOffset])
 
   // Initialize position on navmesh
   useEffect(() => {
@@ -174,7 +187,7 @@ export function Pedestrian({
     } else {
       // Move towards target
       direction.normalize()
-      const moveDistance = Math.min(speed * delta, distance)
+      const moveDistance = Math.min(effectiveSpeed * delta, distance)
       position.addScaledVector(direction, moveDistance)
 
       // Face direction of movement (add PI because Soldier model faces +Z)
