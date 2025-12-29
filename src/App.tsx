@@ -21,6 +21,12 @@ const demos: Demo[] = [
     description: 'Watch animated soldiers walk through the Littlest Tokyo scene.',
     href: `${BASE_URL}tokyo-pedestrians.html`,
   },
+  {
+    id: 'react-xr-multiview',
+    title: 'React XR Multiview',
+    description: 'WebGPURenderer with multiview optimization for VR rendering.',
+    href: `${BASE_URL}react-xr-multiview.html`,
+  },
 ]
 
 export function DemoSelection() {
