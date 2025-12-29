@@ -2,7 +2,6 @@ import { Suspense, useEffect } from 'react'
 import { useThree } from '@react-three/fiber'
 import { OrbitControls, Stats } from '@react-three/drei'
 import { XR, createXRStore, XROrigin } from '@react-three/xr'
-import { SplashScreen } from 'r3f-xr-widgets'
 import { WebGPUCanvas } from '../components/WebGPUCanvas'
 import { MultiviewScene } from '../components/MultiviewScene'
 import {
@@ -132,16 +131,27 @@ export function ReactXRMultiview() {
         </XR>
       </WebGPUCanvas>
 
-      {/* VR entry splash screen */}
-      <SplashScreen store={xrStore} modes={['immersive-vr']}>
-        <h1>WebGPU Multiview Demo</h1>
-        <p>Test WebGPURenderer with multiview optimization for VR.</p>
-        <p style={{ fontSize: '0.9em', color: '#666' }}>
-          Uses forceWebGL + multiview for OVR_multiview2 support.
-          <br />
-          Check console for multiview status when entering VR.
-        </p>
-      </SplashScreen>
+      {/* VR entry button */}
+      <button
+        onClick={() => xrStore.enterVR()}
+        style={{
+          position: 'absolute',
+          bottom: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          padding: '12px 24px',
+          fontSize: '16px',
+          fontWeight: 'bold',
+          cursor: 'pointer',
+          background: '#4a9eff',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          zIndex: 1000,
+        }}
+      >
+        Enter VR
+      </button>
     </>
   )
 }
