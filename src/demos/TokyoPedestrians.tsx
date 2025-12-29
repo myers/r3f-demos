@@ -8,6 +8,7 @@ import { NavMeshProvider } from '../components/NavMeshProvider'
 import { NavMeshDebug } from '../components/NavMeshDebug'
 import { LittlestTokyo } from '../components/LittlestTokyo'
 import { DebugLogProvider, DebugLogPanel } from '../components/DebugLog'
+import { CollisionSystem } from '../ecs/systems'
 
 // Base path for assets (handles GitHub Pages deployment)
 const BASE_URL = import.meta.env.BASE_URL || '/'
@@ -129,6 +130,8 @@ export function TokyoPedestrians() {
             <PedestriansScene pedestrianCount={pedestrianCount} />
           </NavMeshProvider>
         </Suspense>
+
+        <CollisionSystem />
 
         <OrbitControls
           target={[0, 0, 0]}
