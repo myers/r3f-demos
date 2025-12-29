@@ -1,4 +1,4 @@
-import { Suspense, useRef } from 'react'
+import { Suspense, useRef, useMemo } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { useControls, button, monitor } from 'leva'
@@ -39,11 +39,41 @@ function FPSMonitor() {
   return null
 }
 
-function PedestriansScene() {
+// Seeded random number generator for stable pedestrian positions
+function seededRandom(seed: number) {
+  const x = Math.sin(seed) * 10000
+  return x - Math.floor(x)
+}
+
+// Generate stable pedestrian configs based on count
+function generatePedestrianConfigs(count: number) {
+  const configs = []
+  for (let i = 0; i < count; i++) {
+    const seed = i * 12345
+    configs.push({
+      id: `ped${i + 1}`,
+      startPosition: new THREE.Vector3(
+        (seededRandom(seed) - 0.5) * 200,
+        -200,
+        (seededRandom(seed + 1) - 0.5) * 200
+      ),
+      speed: 28 + seededRandom(seed + 2) * 10, // 28-38 speed range
+    })
+  }
+  return configs
+}
+
+function PedestriansScene({ pedestrianCount }: { pedestrianCount: number }) {
   const { showTokyo, showNavMesh } = useControls({
     showTokyo: { value: true, label: 'Show Tokyo Model' },
     showNavMesh: { value: true, label: 'Show NavMesh' },
   })
+
+  // Generate stable configs based on count
+  const pedestrianConfigs = useMemo(
+    () => generatePedestrianConfigs(pedestrianCount),
+    [pedestrianCount]
+  )
 
   return (
     <>
@@ -59,21 +89,14 @@ function PedestriansScene() {
 
       {/* Pedestrians in model space */}
       <group scale={MODEL_SCALE}>
-        <Pedestrian
-          id="ped1"
-          startPosition={new THREE.Vector3(0, -200, 0)}
-          speed={30}
-        />
-        <Pedestrian
-          id="ped2"
-          startPosition={new THREE.Vector3(100, -200, 50)}
-          speed={35}
-        />
-        <Pedestrian
-          id="ped3"
-          startPosition={new THREE.Vector3(-50, -200, 100)}
-          speed={32}
-        />
+        {pedestrianConfigs.map((config) => (
+          <Pedestrian
+            key={config.id}
+            id={config.id}
+            startPosition={config.startPosition}
+            speed={config.speed}
+          />
+        ))}
       </group>
 
       {/* Simple lighting */}
@@ -86,10 +109,11 @@ function PedestriansScene() {
 export function TokyoPedestrians() {
   const navMeshUrl = `${BASE_URL}models/LittlestTokyo.navmesh.bin`
 
-  const { showDebugLog } = useControls({
+  const { pedestrianCount, showDebugLog } = useControls({
     'Back to Demos': button(() => {
       window.location.href = BASE_URL
     }),
+    pedestrianCount: { value: 3, min: 1, max: 20, step: 1, label: 'Pedestrians' },
     showDebugLog: { value: false, label: 'Show Debug Log' },
   })
 
@@ -102,7 +126,7 @@ export function TokyoPedestrians() {
       >
         <Suspense fallback={null}>
           <NavMeshProvider navMeshUrl={navMeshUrl}>
-            <PedestriansScene />
+            <PedestriansScene pedestrianCount={pedestrianCount} />
           </NavMeshProvider>
         </Suspense>
 
