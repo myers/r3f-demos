@@ -1,7 +1,7 @@
-import { Suspense } from 'react'
-import { Canvas } from '@react-three/fiber'
-import { OrbitControls, Stats } from '@react-three/drei'
-import { useControls } from 'leva'
+import { Suspense, useRef } from 'react'
+import { Canvas, useFrame } from '@react-three/fiber'
+import { OrbitControls } from '@react-three/drei'
+import { useControls, button, monitor } from 'leva'
 import * as THREE from 'three'
 import { Pedestrian } from '../components/Pedestrian'
 import { NavMeshProvider } from '../components/NavMeshProvider'
@@ -14,6 +14,30 @@ const BASE_URL = import.meta.env.BASE_URL || '/'
 
 // Navmesh is in model space, pedestrians work in same coordinate system
 const MODEL_SCALE = 0.01
+
+// Component to track and expose FPS to leva
+function FPSMonitor() {
+  const fpsRef = useRef(60)
+  const framesRef = useRef(0)
+  const lastTimeRef = useRef(performance.now())
+
+  useControls({
+    fps: monitor(() => fpsRef.current, { graph: true, interval: 100 }),
+  })
+
+  useFrame(() => {
+    framesRef.current++
+    const now = performance.now()
+    const elapsed = now - lastTimeRef.current
+    if (elapsed >= 500) {
+      fpsRef.current = Math.round((framesRef.current / elapsed) * 1000)
+      framesRef.current = 0
+      lastTimeRef.current = now
+    }
+  })
+
+  return null
+}
 
 function PedestriansScene() {
   const { showTokyo, showNavMesh } = useControls({
@@ -63,31 +87,14 @@ export function TokyoPedestrians() {
   const navMeshUrl = `${BASE_URL}models/LittlestTokyo.navmesh.bin`
 
   const { showDebugLog } = useControls({
+    'Back to Demos': button(() => {
+      window.location.href = BASE_URL
+    }),
     showDebugLog: { value: false, label: 'Show Debug Log' },
   })
 
   return (
     <DebugLogProvider>
-      <a
-        href={BASE_URL}
-        style={{
-          position: 'absolute',
-          top: '20px',
-          left: '20px',
-          zIndex: 1000,
-          padding: '8px 16px',
-          fontSize: '14px',
-          cursor: 'pointer',
-          background: '#333',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-          textDecoration: 'none',
-          display: 'inline-block',
-        }}
-      >
-        ← Back to Demos
-      </a>
       <Canvas
         camera={{ position: [5, 5, 5], fov: 60 }}
         gl={{ antialias: true }}
@@ -105,7 +112,7 @@ export function TokyoPedestrians() {
           dampingFactor={0.05}
         />
 
-        <Stats />
+        <FPSMonitor />
       </Canvas>
       {showDebugLog && <DebugLogPanel />}
     </DebugLogProvider>
