@@ -13,11 +13,9 @@ import {
 // Base path for links (handles GitHub Pages deployment)
 const BASE_URL = import.meta.env.BASE_URL || '/'
 
-// Create XR store with layers feature for XRProjectionLayer support
-// Controllers and hands are enabled by default in @react-three/xr v6
-const xrStore = createXRStore({
-  layers: true, // Enable XRProjectionLayer support for multiview
-})
+// Create XR store - layers is enabled by default in @react-three/xr v6,
+// which allows WebGPURenderer to use XRProjectionLayer for multiview
+const xrStore = createXRStore()
 
 /**
  * XR configuration component that runs inside the Canvas/XR context.
