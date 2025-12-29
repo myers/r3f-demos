@@ -5,6 +5,9 @@ import { XR, createXRStore, XROrigin, TeleportTarget } from '@react-three/xr'
 import { SplashScreen } from 'r3f-xr-widgets'
 import { LittlestTokyo } from '../components/LittlestTokyo'
 
+// Base path for links (handles GitHub Pages deployment)
+const BASE_URL = import.meta.env.BASE_URL || '/'
+
 const store = createXRStore({
   controller: {
     teleportPointer: true,
@@ -25,15 +28,11 @@ function TeleportArea() {
   )
 }
 
-interface LittlestTokyoVRProps {
-  onBack: () => void
-}
-
-export function LittlestTokyoVR({ onBack }: LittlestTokyoVRProps) {
+export function LittlestTokyoVR() {
   return (
     <>
-      <button
-        onClick={onBack}
+      <a
+        href={BASE_URL}
         style={{
           position: 'absolute',
           top: '20px',
@@ -46,10 +45,12 @@ export function LittlestTokyoVR({ onBack }: LittlestTokyoVRProps) {
           color: 'white',
           border: 'none',
           borderRadius: '4px',
+          textDecoration: 'none',
+          display: 'inline-block',
         }}
       >
         ← Back to Demos
-      </button>
+      </a>
       <Canvas
         camera={{ position: [5, 2, 8], fov: 40 }}
         gl={{ antialias: true }}

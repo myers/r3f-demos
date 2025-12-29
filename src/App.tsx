@@ -1,30 +1,29 @@
-import { useState } from 'react'
-import { LittlestTokyoVR } from './demos/LittlestTokyoVR'
-import { TokyoPedestrians } from './demos/TokyoPedestrians'
-
 interface Demo {
   id: string
   title: string
   description: string
-  component: React.ComponentType<{ onBack: () => void }>
+  href: string
 }
+
+// Base path for links (handles GitHub Pages deployment)
+const BASE_URL = import.meta.env.BASE_URL || '/'
 
 const demos: Demo[] = [
   {
     id: 'littlest-tokyo-vr',
     title: 'Littlest Tokyo VR',
     description: 'Walk through an animated city scene using VR teleportation.',
-    component: LittlestTokyoVR,
+    href: `${BASE_URL}littlest-tokyo-vr.html`,
   },
   {
     id: 'tokyo-pedestrians',
     title: 'Tokyo Pedestrians',
     description: 'Watch animated soldiers walk through the Littlest Tokyo scene.',
-    component: TokyoPedestrians,
+    href: `${BASE_URL}tokyo-pedestrians.html`,
   },
 ]
 
-function DemoSelection({ onSelectDemo }: { onSelectDemo: (id: string) => void }) {
+export function DemoSelection() {
   return (
     <div
       style={{
@@ -64,9 +63,9 @@ function DemoSelection({ onSelectDemo }: { onSelectDemo: (id: string) => void })
           }}
         >
           {demos.map((demo) => (
-            <button
+            <a
               key={demo.id}
-              onClick={() => onSelectDemo(demo.id)}
+              href={demo.href}
               style={{
                 background: 'rgba(255, 255, 255, 0.05)',
                 border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -74,6 +73,8 @@ function DemoSelection({ onSelectDemo }: { onSelectDemo: (id: string) => void })
                 padding: '24px',
                 cursor: 'pointer',
                 textAlign: 'left',
+                textDecoration: 'none',
+                display: 'block',
                 transition: 'all 0.2s ease',
               }}
               onMouseEnter={(e) => {
@@ -108,7 +109,7 @@ function DemoSelection({ onSelectDemo }: { onSelectDemo: (id: string) => void })
               >
                 {demo.description}
               </p>
-            </button>
+            </a>
           ))}
         </div>
       </div>
@@ -116,17 +117,4 @@ function DemoSelection({ onSelectDemo }: { onSelectDemo: (id: string) => void })
   )
 }
 
-function App() {
-  const [selectedDemoId, setSelectedDemoId] = useState<string | null>(null)
-
-  const selectedDemo = demos.find((d) => d.id === selectedDemoId)
-
-  if (selectedDemo) {
-    const DemoComponent = selectedDemo.component
-    return <DemoComponent onBack={() => setSelectedDemoId(null)} />
-  }
-
-  return <DemoSelection onSelectDemo={setSelectedDemoId} />
-}
-
-export default App
+export default DemoSelection
