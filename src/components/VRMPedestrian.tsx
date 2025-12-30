@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo } from 'react'
+import { useEffect, useRef, useMemo, useState } from 'react'
 import { useLoader, useFrame } from '@react-three/fiber'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { VRMLoaderPlugin, VRMUtils, VRM } from '@pixiv/three-vrm'
@@ -7,9 +7,16 @@ import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js'
 import { useNavMesh } from './NavMeshProvider'
 import { useDebugLog } from './DebugLog'
 import { world, type Entity } from '../ecs/world'
+import { loadMixamoAnimation } from '../utils/loadMixamoAnimation'
 
-// CC0 VRM model from OpenGameArt
-const DEFAULT_VRM_URL = 'https://opengameart.org/sites/default/files/sendagaya_shino.vrm'
+// CC0 VRM model from pixiv/three-vrm examples
+const DEFAULT_VRM_URL = 'https://cdn.jsdelivr.net/gh/pixiv/three-vrm@dev/packages/three-vrm/examples/models/VRM1_Constraint_Twist_Sample.vrm'
+
+// Base path for assets
+const BASE_URL = import.meta.env.BASE_URL || '/'
+
+// Walking animation (Mixamo FBX) - using dance as placeholder until walking.fbx is added
+const WALKING_ANIMATION_URL = `${BASE_URL}animations/dance.fbx`
 
 // Collision radius for pedestrians (in navmesh/model space)
 const COLLISION_RADIUS = 15
@@ -19,6 +26,8 @@ interface VRMPedestrianProps {
   id?: string
   /** URL to VRM model file */
   vrmUrl?: string
+  /** URL to walking animation FBX */
+  animationUrl?: string
   /** Starting position (will find nearest point on navmesh) */
   startPosition?: THREE.Vector3
   /** Walking speed in units per second */
@@ -38,6 +47,7 @@ function useVRM(url: string) {
 export function VRMPedestrian({
   id = 'vrm',
   vrmUrl = DEFAULT_VRM_URL,
+  animationUrl = WALKING_ANIMATION_URL,
   startPosition = new THREE.Vector3(0, 0, 0),
   speed = 30,
   scale = 30,
@@ -45,9 +55,11 @@ export function VRMPedestrian({
   const vrm = useVRM(vrmUrl)
   const groupRef = useRef<THREE.Group>(null)
   const vrmRef = useRef<VRM | null>(null)
+  const mixerRef = useRef<THREE.AnimationMixer | null>(null)
   const { navMeshQuery, bounds } = useNavMesh()
   const { log } = useDebugLog()
   const entityRef = useRef<Entity | null>(null)
+  const [animationLoaded, setAnimationLoaded] = useState(false)
 
   // Randomize speed with ±10% variance (stable per pedestrian instance)
   const effectiveSpeed = useMemo(() => {
@@ -55,6 +67,9 @@ export function VRMPedestrian({
     const randomFactor = 1 + (Math.random() * 2 - 1) * variance
     return speed * randomFactor
   }, [speed])
+
+  // Random animation offset for variety
+  const animationOffset = useMemo(() => Math.random(), [])
 
   // Use navmesh bounds for search extent, with fallback
   const searchExtent = bounds?.halfExtents ?? { x: 500, y: 500, z: 500 }
@@ -79,7 +94,6 @@ export function VRMPedestrian({
     VRMUtils.combineSkeletons(cloned)
 
     // Fix VRM 0.x orientation (rotates to face forward)
-    // Note: rotateVRM0 checks version automatically
     if (vrm) {
       VRMUtils.rotateVRM0(vrm)
     }
@@ -92,25 +106,46 @@ export function VRMPedestrian({
     return cloned
   }, [vrm])
 
-  // Store VRM reference for updates
+  // Store VRM reference and set up animation
   useEffect(() => {
-    if (vrm) {
-      vrmRef.current = vrm
+    if (!vrm || !clonedScene) return
 
-      // Apply combineMorphs for mobile performance
-      VRMUtils.combineMorphs(vrm)
+    vrmRef.current = vrm
 
-      log(`[${id}] VRM loaded successfully`)
-    }
+    // Apply combineMorphs for mobile performance
+    VRMUtils.combineMorphs(vrm)
+
+    // Create animation mixer for the cloned scene
+    const mixer = new THREE.AnimationMixer(clonedScene)
+    mixerRef.current = mixer
+
+    log(`[${id}] VRM loaded, loading animation...`)
+
+    // Load and apply the walking animation
+    loadMixamoAnimation(animationUrl, vrm)
+      .then((clip) => {
+        const action = mixer.clipAction(clip)
+        // Set random start time for variety
+        action.time = animationOffset * clip.duration
+        action.play()
+        setAnimationLoaded(true)
+        log(`[${id}] Animation loaded and playing`)
+      })
+      .catch((err) => {
+        log(`[${id}] Failed to load animation: ${err.message}`)
+        console.error('Animation load error:', err)
+      })
 
     // Cleanup on unmount
     return () => {
+      mixer.stopAllAction()
+      mixerRef.current = null
       if (vrmRef.current?.scene) {
         VRMUtils.deepDispose(vrmRef.current.scene)
       }
       vrmRef.current = null
     }
-  }, [vrm, id, log])
+  }, [vrm, clonedScene, animationUrl, animationOffset, id, log])
 
   // Blink animation state
   const blinkState = useRef({
@@ -186,6 +221,11 @@ export function VRMPedestrian({
 
   // Movement and VRM update logic in useFrame
   useFrame((_, delta) => {
+    // Update animation mixer
+    if (mixerRef.current) {
+      mixerRef.current.update(delta)
+    }
+
     // Update VRM (required every frame for spring bones, expressions, etc.)
     if (vrmRef.current) {
       vrmRef.current.update(delta)
