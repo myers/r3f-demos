@@ -24,6 +24,7 @@ export interface Entity {
   collision?: {
     radius: number
     separation: THREE.Vector3 // Accumulated separation force this frame
+    isStatic?: boolean // Static objects don't receive separation forces (like streetcar)
   }
 
   // Animation state

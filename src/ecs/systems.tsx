@@ -44,11 +44,15 @@ export function CollisionSystem() {
           const nz = dz / dist
           const force = overlap * SEPARATION_STRENGTH
 
-          // Apply equal and opposite forces
-          a.collision.separation.x -= nx * force
-          a.collision.separation.z -= nz * force
-          b.collision.separation.x += nx * force
-          b.collision.separation.z += nz * force
+          // Apply forces (static objects don't receive forces, only push others)
+          if (!a.collision.isStatic) {
+            a.collision.separation.x -= nx * force
+            a.collision.separation.z -= nz * force
+          }
+          if (!b.collision.isStatic) {
+            b.collision.separation.x += nx * force
+            b.collision.separation.z += nz * force
+          }
         }
       }
     }
