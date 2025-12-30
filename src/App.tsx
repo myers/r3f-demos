@@ -21,6 +21,12 @@ const demos: Demo[] = [
     description: 'Watch animated soldiers walk through the Littlest Tokyo scene.',
     href: `${BASE_URL}tokyo-pedestrians.html`,
   },
+  {
+    id: 'vrm-tokyo',
+    title: 'VRM Tokyo Pedestrians',
+    description: 'VRM avatar characters walking through the Littlest Tokyo scene with physics-based hair and expressions.',
+    href: `${BASE_URL}vrm-tokyo.html`,
+  },
 ]
 
 export function DemoSelection() {
