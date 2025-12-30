@@ -15,8 +15,8 @@ const DEFAULT_VRM_URL = 'https://cdn.jsdelivr.net/gh/pixiv/three-vrm@dev/package
 // Base path for assets
 const BASE_URL = import.meta.env.BASE_URL || '/'
 
-// Walking animation (Mixamo FBX) - using dance as placeholder until walking.fbx is added
-const WALKING_ANIMATION_URL = `${BASE_URL}animations/dance.fbx`
+// Walking animation (Mixamo FBX from aaronsnoswell/3DCharacter)
+const WALKING_ANIMATION_URL = `${BASE_URL}animations/walking.fbx`
 
 // Collision radius for pedestrians (in navmesh/model space)
 const COLLISION_RADIUS = 15
