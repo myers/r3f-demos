@@ -12,6 +12,7 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         'littlest-tokyo-vr': resolve(__dirname, 'littlest-tokyo-vr.html'),
         'tokyo-pedestrians': resolve(__dirname, 'tokyo-pedestrians.html'),
+        'vrm-tokyo': resolve(__dirname, 'vrm-tokyo.html'),
       },
     },
   },
