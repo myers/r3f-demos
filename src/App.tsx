@@ -27,6 +27,12 @@ const demos: Demo[] = [
     description: 'WebGPURenderer with multiview optimization for VR rendering.',
     href: `${BASE_URL}react-xr-multiview.html`,
   },
+  {
+    id: 'vrm-tokyo',
+    title: 'VRM Tokyo Pedestrians',
+    description: 'VRM avatar characters walking through the Littlest Tokyo scene with physics-based hair and expressions.',
+    href: `${BASE_URL}vrm-tokyo.html`,
+  },
 ]
 
 export function DemoSelection() {

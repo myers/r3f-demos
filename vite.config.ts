@@ -13,6 +13,7 @@ export default defineConfig({
         'littlest-tokyo-vr': resolve(__dirname, 'littlest-tokyo-vr.html'),
         'tokyo-pedestrians': resolve(__dirname, 'tokyo-pedestrians.html'),
         'react-xr-multiview': resolve(__dirname, 'react-xr-multiview.html'),
+        'vrm-tokyo': resolve(__dirname, 'vrm-tokyo.html'),
       },
     },
   },

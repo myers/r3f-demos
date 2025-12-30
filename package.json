@@ -13,6 +13,7 @@
     "generate-navmesh": "tsx scripts/generate-navmesh.ts"
   },
   "dependencies": {
+    "@pixiv/three-vrm": "^3.4.4",
     "@pmndrs/pointer-events": "^6.6.28",
     "@preact/signals-core": "^1.12.1",
     "@react-spring/three": "^10.0.3",
