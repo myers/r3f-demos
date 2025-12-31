@@ -27,6 +27,12 @@ const demos: Demo[] = [
     description: 'VRM avatar characters walking through the Littlest Tokyo scene with physics-based hair and expressions.',
     href: `${BASE_URL}vrm-tokyo.html`,
   },
+  {
+    id: 'vrm-animation',
+    title: 'VRM Animation Viewer',
+    description: 'Load VRM models and play animations with interactive controls.',
+    href: `${BASE_URL}vrm-animation.html`,
+  },
 ]
 
 export function DemoSelection() {
